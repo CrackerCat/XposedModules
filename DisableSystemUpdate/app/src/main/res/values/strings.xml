@@ -1,0 +1,4 @@
+<resources>
+  <string name="app_name">DisableSystemUpdate</string>
+  <string name="xposed_description">Remove system update notification of Google Play services.</string>
+</resources>
