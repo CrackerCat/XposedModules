@@ -42,7 +42,7 @@ public class Main implements IXposedHookLoadPackage {
       throws Throwable {
 
     findAndHookMethod(Throwable.class,
-        "getStackTrace",
+        "getInternalStackTrace",
         new XC_MethodHook() {
           @Override
           protected void afterHookedMethod(MethodHookParam param) throws Throwable {
