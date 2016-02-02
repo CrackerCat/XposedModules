@@ -1,0 +1,4 @@
+<resources>
+  <string name="app_name">HideFromStack</string>
+  <string name="xposed_description">Remove caller info from Throwable.getStackTrace() result.</string>
+</resources>
