@@ -1,0 +1,4 @@
+<resources>
+  <string name="app_name">LogRevealer</string>
+  <string name="xposed_description">Enable logging switch/logging level.</string>
+</resources>
