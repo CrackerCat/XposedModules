@@ -1,0 +1,4 @@
+<resources>
+  <string name="app_name">AntiSignCheck</string>
+  <string name="xposed_description">.</string>
+</resources>
