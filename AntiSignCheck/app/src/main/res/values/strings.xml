@@ -1,4 +1,4 @@
 <resources>
   <string name="app_name">AntiSignCheck</string>
-  <string name="xposed_description">.</string>
+  <string name="xposed_description">Bypass package signature checking.</string>
 </resources>

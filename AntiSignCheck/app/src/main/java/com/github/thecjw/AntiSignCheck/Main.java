@@ -5,12 +5,15 @@ import android.os.Parcel;
 import android.util.Log;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.lang.reflect.Field;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateFactory;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -32,7 +35,7 @@ public class Main implements IXposedHookLoadPackage {
   private String processName = "";
 
   private String pluginResourcePath = "";
-  private byte[] signature;
+  private Certificate origCertificate;
 
   private void getPluginResourcePath() {
     try {
@@ -60,15 +63,19 @@ public class Main implements IXposedHookLoadPackage {
   private boolean readSignatureFromPackage() {
 
     try {
-      ZipFile zipFile = new ZipFile(new File(pluginResourcePath));
-      ZipEntry entry = zipFile.getEntry(String.format("assets/certs/%s.bin", packageName));
+      final ZipFile zipFile = new ZipFile(new File(pluginResourcePath));
+      final ZipEntry entry = zipFile.getEntry(String.format("assets/certs/%s.RSA", packageName));
 
-      InputStream inputStream = zipFile.getInputStream(entry);
-      signature = new byte[inputStream.available()];
+      final InputStream inputStream = zipFile.getInputStream(entry);
+      final byte[] signature = new byte[inputStream.available()];
       inputStream.read(signature);
       inputStream.close();
 
-    } catch (IOException e) {
+      final CertificateFactory certFactory = CertificateFactory.getInstance("X.509");
+      final ByteArrayInputStream bais = new ByteArrayInputStream(signature);
+      origCertificate = certFactory.generateCertificate(bais);
+
+    } catch (Exception e) {
       Log.e(TAG, e.getMessage());
       return false;
     }
@@ -95,7 +102,7 @@ public class Main implements IXposedHookLoadPackage {
               try {
                 Field field_mSignature = Signature.class.getDeclaredField("mSignature");
                 field_mSignature.setAccessible(true);
-                field_mSignature.set(instance, signature);
+                field_mSignature.set(instance, origCertificate.getEncoded());
                 Log.d(TAG, String.format("Replacing package cert in %s done.", packageName));
               } catch (Exception e) {
                 Log.e(TAG, e.getMessage());
