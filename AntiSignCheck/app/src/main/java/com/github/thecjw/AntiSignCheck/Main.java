@@ -56,12 +56,12 @@ public class Main implements IXposedHookLoadPackage {
         }
       }
     } catch (Exception e) {
-      e.printStackTrace();
+      Log.e(TAG, e.getMessage());
     }
   }
 
   private boolean readSignatureFromPackage() {
-
+    boolean result = false;
     try {
       final ZipFile zipFile = new ZipFile(new File(pluginResourcePath));
       final ZipEntry entry = zipFile.getEntry(String.format("assets/certs/%s.RSA", packageName));
@@ -75,12 +75,11 @@ public class Main implements IXposedHookLoadPackage {
       final ByteArrayInputStream bais = new ByteArrayInputStream(signature);
       origCertificate = certFactory.generateCertificate(bais);
 
+      result = true;
     } catch (Exception e) {
-      Log.e(TAG, e.getMessage());
-      return false;
+      //
     }
-
-    return true;
+    return result;
   }
 
   @Override
