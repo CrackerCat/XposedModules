@@ -1,4 +1,4 @@
 <resources>
   <string name="app_name">WaitForDebugger</string>
-  <string name="xposed_description">Suspend process before libjiagu.so loading.</string>
+  <string name="xposed_description">Suspend process before at entry.</string>
 </resources>

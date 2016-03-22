@@ -18,6 +18,11 @@ public class Main implements IXposedHookLoadPackage {
 
   private static final String TAG = "WaitForDebugger";
   private static final int COUNTDOWN = 10;
+
+  private static final String[] ENTRY_CLASSES = {
+      "com.qihoo.util.StubApplication",
+      "com.tencent.StubShell.TxAppEntry"};
+
   private String packageName = "";
   private String processName = "";
 
@@ -27,28 +32,32 @@ public class Main implements IXposedHookLoadPackage {
     packageName = loadPackageParam.packageName;
     processName = loadPackageParam.processName;
 
-    try {
-      // No special reason.
-      if (packageName.equals(processName)) {
-        // for libjiagu v1.0.5.0 ~ v1.0.9.0
-        Class<?> qihooEntryClass = loadPackageParam.classLoader.loadClass("com.qihoo.util.StubApplication");
-        // Hook protected void attachBaseContext(Context arg7)
-        findAndHookMethod(qihooEntryClass,
-            "attachBaseContext",
-            Context.class,
-            new XC_MethodHook() {
-              @Override
-              protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                Context context = (Context) param.args[0];
-                Log.d(TAG, String.format("%s(%d) is protected by libjiagu.", packageName, Process.myPid()));
-                Log.d(TAG, String.format("Waiting for %ds.", COUNTDOWN));
-                SystemClock.sleep(COUNTDOWN * 1000);
-              }
-            });
-      }
+    if (packageName.equals(processName)) {
 
-    } catch (Exception e) {
-      // Ignore.
+      for (final String className : ENTRY_CLASSES) {
+        try {
+          Class<?> entryClass = loadPackageParam.classLoader.loadClass(className);
+
+          findAndHookMethod(entryClass,
+              "attachBaseContext",
+              Context.class,
+              new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                  Context context = (Context) param.args[0];
+                  Log.d(TAG, String.format("%s(%d) is protected by %s.", packageName, Process.myPid(), className));
+                  Log.d(TAG, String.format("Waiting for %ds.", COUNTDOWN));
+                  SystemClock.sleep(COUNTDOWN * 1000);
+                }
+              });
+          // Exit loop
+          break;
+
+        } catch (Exception e) {
+          //
+        }
+
+      }
     }
   }
 }
