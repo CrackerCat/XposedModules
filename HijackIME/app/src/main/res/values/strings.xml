@@ -1,0 +1,4 @@
+<resources>
+  <string name="app_name">HijackIME</string>
+  <string name="xposed_description">Just get IME result.</string>
+</resources>
