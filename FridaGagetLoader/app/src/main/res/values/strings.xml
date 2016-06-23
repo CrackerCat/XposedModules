@@ -1,0 +1,4 @@
+<resources>
+  <string name="app_name">FridaGagetLoader</string>
+  <string name="xposed_description">Blah blah blah...</string>
+</resources>
