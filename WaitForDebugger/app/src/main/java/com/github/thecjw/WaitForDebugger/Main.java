@@ -21,7 +21,8 @@ public class Main implements IXposedHookLoadPackage {
 
   private static final String[] ENTRY_CLASSES = {
       "com.qihoo.util.StubApplication",
-      "com.tencent.StubShell.TxAppEntry"};
+      "com.tencent.StubShell.TxAppEntry",
+      "com.seworks.medusah.app"};
 
   private String packageName = "";
   private String processName = "";
@@ -43,7 +44,7 @@ public class Main implements IXposedHookLoadPackage {
               Context.class,
               new XC_MethodHook() {
                 @Override
-                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                   Context context = (Context) param.args[0];
                   Log.d(TAG, String.format("%s(%d) is protected by %s.", packageName, Process.myPid(), className));
                   Log.d(TAG, String.format("Waiting for %ds.", COUNTDOWN));
