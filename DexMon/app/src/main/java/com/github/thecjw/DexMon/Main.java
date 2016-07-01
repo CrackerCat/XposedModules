@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
@@ -39,6 +40,8 @@ public class Main implements IXposedHookLoadPackage {
 
   private Method methodGetClassNameList;
 
+  public static DE3 DE3Instance = DE3.INSTANCE;
+
 
   @Override
   public void handleLoadPackage(LoadPackageParam loadPackageParam)
@@ -47,7 +50,7 @@ public class Main implements IXposedHookLoadPackage {
     packageName = loadPackageParam.packageName;
     processName = loadPackageParam.processName;
 
-    // TODO: Load so and patch _Z16dvmOptimizeClassP11ClassObjectb and _Z17dvmUpdateCodeUnitPK6MethodPtt
+    DE3Instance.init();
 
     findAndHookMethod("android.app.Application",
         loadPackageParam.classLoader,
@@ -58,6 +61,7 @@ public class Main implements IXposedHookLoadPackage {
           protected void afterHookedMethod(MethodHookParam param)
               throws Throwable {
             context = (Context) param.args[0];
+            resolveAllClasses(XposedBridge.BOOTCLASSLOADER);
           }
         });
 
@@ -78,7 +82,7 @@ public class Main implements IXposedHookLoadPackage {
 
             ClassLoader _this = (ClassLoader) param.thisObject;
 
-            // Log.d(TAG, String.format("Loader: %s, DexFile: %s", _this.getClass().getName(), dexPath));
+            Log.d(TAG, String.format("Loader: %s, DexFile: %s", _this.getClass().getName(), dexPath));
 
             resolveAllClasses(_this);
           }
