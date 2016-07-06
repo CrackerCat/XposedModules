@@ -13,8 +13,8 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
-import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
+import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 
 /**
  * Created by N on 2016/2/2.
@@ -42,15 +42,12 @@ public class Main implements IXposedHookLoadPackage {
 
   public static DE3 DE3Instance = DE3.INSTANCE;
 
-
   @Override
   public void handleLoadPackage(LoadPackageParam loadPackageParam)
       throws Throwable {
 
     packageName = loadPackageParam.packageName;
     processName = loadPackageParam.processName;
-
-    DE3Instance.init();
 
     findAndHookMethod("android.app.Application",
         loadPackageParam.classLoader,
@@ -113,7 +110,7 @@ public class Main implements IXposedHookLoadPackage {
         Object mCookie = fieldmCookie.get(dexFile);
 
         fieldmFileName = getField(dexFile.getClass(), "mFileName");
-        String fileName = (String)fieldmFileName.get(dexFile);
+        String fileName = (String) fieldmFileName.get(dexFile);
 
         String[] classNames = (String[]) methodGetClassNameList.invoke(dexFile, mCookie);
         Log.d(TAG, String.format("  %d): %s, Classes: %d", i, fileName, classNames.length));

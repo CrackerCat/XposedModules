@@ -5,8 +5,12 @@ import android.os.Process;
 import android.os.SystemClock;
 import android.util.Log;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
@@ -22,7 +26,8 @@ public class Main implements IXposedHookLoadPackage {
   private static final String[] ENTRY_CLASSES = {
       "com.qihoo.util.StubApplication",
       "com.tencent.StubShell.TxAppEntry",
-      "com.seworks.medusah.app"};
+      "com.seworks.medusah.app",
+      "com.shell.SuperApplication"};
 
   private String packageName = "";
   private String processName = "";
@@ -45,10 +50,24 @@ public class Main implements IXposedHookLoadPackage {
               new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                  Context context = (Context) param.args[0];
+
+                  try {
+                    Object dexmon = findDexMon();
+                    if (dexmon != null) {
+                      Class<?> clazz_dexmon = dexmon.getClass();
+                      Field field_instance = clazz_dexmon.getField("DE3Instance");
+                      Object de3 = field_instance.get(dexmon);
+                      Class<?> clazz_de3 = de3.getClass();
+                      Method method_init = clazz_de3.getMethod("init");
+                      method_init.invoke(de3);
+                    }
+                  } catch (Exception e) {
+                    Log.d(TAG, e.getMessage());
+                  }
+
                   Log.d(TAG, String.format("%s(%d) is protected by %s.", packageName, Process.myPid(), className));
                   Log.d(TAG, String.format("Waiting for %ds.", COUNTDOWN));
-                  SystemClock.sleep(COUNTDOWN * 1000);
+                  // SystemClock.sleep(COUNTDOWN * 1000);
                 }
               });
           // Exit loop
@@ -60,5 +79,29 @@ public class Main implements IXposedHookLoadPackage {
 
       }
     }
+  }
+
+  private Object findDexMon() {
+    Object result = null;
+    try {
+      Field fieldLoadedPackageCallbacks = XposedBridge.class.getDeclaredField("sLoadedPackageCallbacks");
+      fieldLoadedPackageCallbacks.setAccessible(true);
+      XposedBridge.CopyOnWriteSortedSet<XC_LoadPackage> loadedPackageCallbacks =
+          (XposedBridge.CopyOnWriteSortedSet<XC_LoadPackage>) fieldLoadedPackageCallbacks.get(null);
+
+      for (Object callback : loadedPackageCallbacks.getSnapshot()) {
+        Class<?> clazz = callback.getClass();
+        Field field_instance = clazz.getDeclaredField("instance");
+        field_instance.setAccessible(true);
+        Object temp = field_instance.get(callback);
+        if (temp.getClass().getName().equals("com.github.thecjw.DexMon.Main")) {
+          result = temp;
+          break;
+        }
+      }
+    } catch (Exception e) {
+      Log.e(TAG, e.getMessage());
+    }
+    return result;
   }
 }
