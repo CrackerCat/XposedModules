@@ -1,0 +1,4 @@
+<resources>
+  <string name="app_name">Unity3DTamper</string>
+  <string name="xposed_description">Loading cheats module into Unity3d Game.</string>
+</resources>
