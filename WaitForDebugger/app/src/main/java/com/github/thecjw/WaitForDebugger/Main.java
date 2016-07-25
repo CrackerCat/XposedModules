@@ -49,8 +49,7 @@ public class Main implements IXposedHookLoadPackage {
               Context.class,
               new XC_MethodHook() {
                 @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-
+                protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                   try {
                     Object dexmon = findDexMon();
                     if (dexmon != null) {
@@ -69,6 +68,10 @@ public class Main implements IXposedHookLoadPackage {
                   Log.d(TAG, String.format("Waiting for %ds.", COUNTDOWN));
                   // SystemClock.sleep(COUNTDOWN * 1000);
                 }
+
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                }
               });
           // Exit loop
           break;
@@ -76,7 +79,6 @@ public class Main implements IXposedHookLoadPackage {
         } catch (Exception e) {
           //
         }
-
       }
     }
   }
