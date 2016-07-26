@@ -5,9 +5,13 @@ import android.os.SystemClock;
 import android.util.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.channels.FileChannel;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
@@ -23,10 +27,22 @@ import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 public class Main implements IXposedHookLoadPackage {
 
   private static final String TAG = "Unity3DTamper";
+  private static final String LIB_NAME = "libmono_hijacker.so";
+  private static final String HIJACK_LIB_PATH = "/data/local/tmp/" + LIB_NAME;
 
   private String packageName = "";
   private String processName = "";
   private Context context;
+
+  private static void copy(File src, File dst) throws IOException {
+    FileInputStream inStream = new FileInputStream(src);
+    FileOutputStream outStream = new FileOutputStream(dst);
+    FileChannel inChannel = inStream.getChannel();
+    FileChannel outChannel = outStream.getChannel();
+    inChannel.transferTo(0, inChannel.size(), outChannel);
+    inStream.close();
+    outStream.close();
+  }
 
   @Override
   public void handleLoadPackage(LoadPackageParam loadPackageParam)
@@ -46,8 +62,16 @@ public class Main implements IXposedHookLoadPackage {
             protected void beforeHookedMethod(MethodHookParam param)
                 throws Throwable {
               Object arg0 = param.args[0]; // android.content.ContextWrapper
-              Log.d(TAG, String.format("Unity3D Game: %s", packageName));
-              // TODO: Copy and load a lib.
+              // Log.d(TAG, String.format("Unity3D Game: %s (%s)", packageName, context.getFilesDir().getAbsolutePath()));
+              if (context != null) {
+                String targetPath = String.format("%s/%s", context.getFilesDir().getAbsolutePath(), LIB_NAME);
+                try {
+                  copy(new File(HIJACK_LIB_PATH), new File(targetPath));
+                  System.load(targetPath);
+                } catch (Exception e) {
+                  Log.e(TAG, e.getMessage());
+                }
+              }
             }
             @Override
             protected void afterHookedMethod(MethodHookParam param)
