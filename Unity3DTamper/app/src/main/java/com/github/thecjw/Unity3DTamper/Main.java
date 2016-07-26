@@ -27,7 +27,7 @@ import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 public class Main implements IXposedHookLoadPackage {
 
   private static final String TAG = "Unity3DTamper";
-  private static final String LIB_NAME = "libmono_hijacker.so";
+  private static final String LIB_NAME = "libroken.so";
   private static final String HIJACK_LIB_PATH = "/data/local/tmp/" + LIB_NAME;
 
   private String packageName = "";
@@ -59,7 +59,7 @@ public class Main implements IXposedHookLoadPackage {
           "android.content.ContextWrapper",
           new XC_MethodHook() {
             @Override
-            protected void beforeHookedMethod(MethodHookParam param)
+            protected void afterHookedMethod(MethodHookParam param)
                 throws Throwable {
               Object arg0 = param.args[0]; // android.content.ContextWrapper
               // Log.d(TAG, String.format("Unity3D Game: %s (%s)", packageName, context.getFilesDir().getAbsolutePath()));
@@ -72,11 +72,6 @@ public class Main implements IXposedHookLoadPackage {
                   Log.e(TAG, e.getMessage());
                 }
               }
-            }
-            @Override
-            protected void afterHookedMethod(MethodHookParam param)
-                throws Throwable {
-              Object arg0 = param.args[0]; // android.content.ContextWrapper
             }
           });
     } catch (Exception e) {
