@@ -25,6 +25,7 @@ public class Main implements IXposedHookLoadPackage {
 
   private static final String[] ENTRY_CLASSES = {
       "com.qihoo.util.StubApplication",
+      "com.qihoo.util.StubApp3646835193",
       "com.tencent.StubShell.TxAppEntry",
       "com.seworks.medusah.app",
       "com.shell.SuperApplication"};

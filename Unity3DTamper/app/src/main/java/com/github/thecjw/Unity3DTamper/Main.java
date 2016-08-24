@@ -51,6 +51,9 @@ public class Main implements IXposedHookLoadPackage {
     packageName = loadPackageParam.packageName;
     processName = loadPackageParam.processName;
 
+    if (!packageName.equals("com.lvan.lsm.qiho") && !packageName.equals("com.bf_korea.google"))
+      return;
+
     try {
       loadPackageParam.classLoader.loadClass("com.unity3d.player.UnityPlayer");
 
