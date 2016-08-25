@@ -1,0 +1,12 @@
+language: android
+jdk: oraclejdk8
+android:
+  components:
+    - platform-tools
+    - tools
+    - build-tools-24.0.2
+    - android-24
+    
+script:
+    - echo "Travis branch is $TRAVIS_BRANCH"
+    - TERM=dumb ls ./*/gradlew | xargs dirname | xargs -I % sh -c 'cd %;chmod +x gradlew;./gradlew assembleDebug;'
