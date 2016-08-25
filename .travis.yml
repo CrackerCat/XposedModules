@@ -9,4 +9,4 @@ android:
     
 script:
     - echo "Travis branch is $TRAVIS_BRANCH"
-    - ls ./*/gradlew | xargs dirname | xargs -I % sh -c 'cd %;chmod +x gradlew;./gradlew assembleDebug;'
+    - ls ./*/gradlew | xargs dirname | xargs -I % sh -c 'cd %;chmod +x gradlew;TERM=dumb ./gradlew assembleDebug;'
