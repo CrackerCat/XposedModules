@@ -1,0 +1,21 @@
+image: thecjw/docker-android-java8
+
+before_script:
+  - pwd
+
+stages:
+  - build
+
+debug:
+  stage: build
+  except:
+    - release
+  script:
+    - ls ./*/gradlew | xargs -I % sh -c 'chmod +x %; %; assembleDebug'
+
+release:
+  stage: build
+  only:
+    - release
+  script:
+    - ls ./*/gradlew | xargs -I % sh -c 'chmod +x %; %; assembleDebug'
