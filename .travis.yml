@@ -9,7 +9,4 @@ android:
 
 script:
     - echo "Travis branch is $TRAVIS_BRANCH"
-    - cd $TRAVIS_BUILD_DIR/
-    - ls $(pwd)/*/gradlew
-    - chmod +x ./build.sh
-    - ./build.sh
+    - ls $(pwd)/*/gradlew | xargs echo

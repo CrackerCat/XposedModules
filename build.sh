@@ -1,2 +1,2 @@
 TERM=dumb
-ls $(pwd)/*/gradlew | xargs -I % sh -c 'chmod +x %;% assembleDebug;'
+ls $(pwd)/*/gradlew | xargs dirname | xargs -I % sh -c 'cd %;chmod +x gradlew;./gradlew assembleDebug;'
