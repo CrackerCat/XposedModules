@@ -11,13 +11,11 @@ debug:
   except:
     - release
   script:
-    - chmod +x ./build.sh
-    - ./build.sh
+    - ls $(pwd)/*/gradlew | xargs dirname | xargs -I % sh -c 'cd %;chmod +x gradlew;./gradlew assembleDebug;'
 
 release:
   stage: build
   only:
     - release
   script:
-    - chmod +x ./build.sh
-    - ./build.sh
+    - ls $(pwd)/*/gradlew | xargs dirname | xargs -I % sh -c 'cd %;chmod +x gradlew;./gradlew assembleDebug;'
