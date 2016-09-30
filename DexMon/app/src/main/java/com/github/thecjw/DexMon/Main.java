@@ -11,6 +11,7 @@ import java.lang.reflect.Method;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
@@ -26,19 +27,6 @@ public class Main implements IXposedHookLoadPackage {
   private String packageName = "";
   private String processName = "";
   private Context context;
-
-  // dalvik.system.BaseDexClassLoader$pathList
-  private Field fieldPathList;
-  // [Ldalvik.system.DexPathList$Element;$dexElements
-  private Field fieldDexElements;
-  // dalvik.system.DexPathList$Element
-  private Field fieldDexFile;
-  //
-  private Field fieldmCookie;
-  //
-  private Field fieldmFileName;
-
-  private Method methodGetClassNameList;
 
   public static DE3 DE3Instance = DE3.INSTANCE;
 
@@ -91,36 +79,26 @@ public class Main implements IXposedHookLoadPackage {
     Log.d(TAG, String.format("Current classloader: %s", classLoader.getClass().getName()));
 
     try {
-      methodGetClassNameList = getMethod(Class.forName("dalvik.system.DexFile"), "getClassNameList");
-      fieldPathList = getField(Class.forName("dalvik.system.BaseDexClassLoader"), "pathList");
-
-      Object pathList = fieldPathList.get(classLoader);
-      fieldDexElements = getField(pathList.getClass(), "dexElements");
-      Object dexElements = fieldDexElements.get(pathList);
-
+      Object pathList = XposedHelpers.getObjectField(classLoader, "pathList");
+      Object dexElements = XposedHelpers.getObjectField(pathList, "dexElements");
       int dexElementsLength = Array.getLength(dexElements);
-      Log.d(TAG, String.format(" Loaded dex files: %d", dexElementsLength));
 
       for (int i = 0; i < dexElementsLength; i++) {
         Object dexElement = Array.get(dexElements, i);
-        fieldDexFile = getField(dexElement.getClass(), "dexFile");
-        Object dexFile = fieldDexFile.get(dexElement);
+        Object dexFile = XposedHelpers.getObjectField(dexElement, "dexFile");
+        Object cookie = XposedHelpers.getObjectField(dexFile, "mCookie");
+        String dexFileName = (String) XposedHelpers.getObjectField(dexFile, "mFileName");
 
-        fieldmCookie = getField(dexFile.getClass(), "mCookie");
-        Object mCookie = fieldmCookie.get(dexFile);
+        Log.d(TAG, String.format("DexFile: %s, %08x", dexFileName, cookie));
 
-        fieldmFileName = getField(dexFile.getClass(), "mFileName");
-        String fileName = (String) fieldmFileName.get(dexFile);
+        String[] classNames = (String[]) XposedHelpers.callMethod(dexFile, "getClassNameList", cookie);
 
-        String[] classNames = (String[]) methodGetClassNameList.invoke(dexFile, mCookie);
-        Log.d(TAG, String.format("  %d): %s, Classes: %d", i, fileName, classNames.length));
-
-        // resolve all.
         for (String className : classNames) {
           try {
             classLoader.loadClass(className);
           } catch (Exception e) {
-            Log.e(TAG, String.format("  Resolve %s failed, classLoader: %s", className, classLoader.getClass().getName()));
+            Log.e(TAG, String.format("  Resolve %s failed, classLoader: %s",
+                className, classLoader.getClass().getName()));
           }
         }
       }
@@ -128,24 +106,6 @@ public class Main implements IXposedHookLoadPackage {
     } catch (Exception e) {
       Log.e(TAG, e.getMessage());
     }
-  }
-
-  private static Field getField(Class<?> clazz, String fieldName)
-      throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
-    Field field = clazz.getDeclaredField(fieldName);
-    field.setAccessible(true);
-    return field;
-  }
-
-  private static Method getMethod(Class<?> clazz, String methodName)
-      throws NoSuchMethodException {
-    for (Method method : clazz.getDeclaredMethods()) {
-      if (method.getName().equals(methodName)) {
-        method.setAccessible(true);
-        return method;
-      }
-    }
-    return null;
   }
 }
 

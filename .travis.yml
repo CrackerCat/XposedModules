@@ -9,4 +9,4 @@ android:
 
 script:
     - echo "Travis branch is $TRAVIS_BRANCH"
-    - ls $(pwd)/*/gradlew | xargs echo
+    - ls $(pwd)/*/gradlew|xargs echo
