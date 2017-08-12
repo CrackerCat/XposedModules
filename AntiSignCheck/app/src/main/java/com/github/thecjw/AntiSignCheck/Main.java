@@ -44,14 +44,18 @@ public class Main implements IXposedHookLoadPackage {
       BufferedReader reader = new BufferedReader(streamReader);
       String line;
       VerbalExpression testRegex = VerbalExpression.regex()
-          .find("/data/app/com.github.thecjw.AntiSignCheck-")
+          .anything()
+          .capture()
+          .find("com.github.thecjw.AntiSignCheck-")
           .digit()
-          .then(".apk")
+          .endCapture()
           .build();
 
       while ((line = reader.readLine()) != null) {
         if (testRegex.test(line)) {
-          pluginResourcePath = testRegex.getText(line);
+          // Log.d(TAG, testRegex.getText(line));
+          // Log.d(TAG, testRegex.getText(line, 1));
+          pluginResourcePath = String.format("/data/app/%s/base.apk", testRegex.getText(line, 1));
           break;
         }
       }
